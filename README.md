@@ -1,3 +1,5 @@
+<!-- 모든 md 파일은 관리자에게 문의 후 수정하시오 -->
+
 # ProjectSecond
 고려대 HRD 빅데이터 교육 - Second Project
 
