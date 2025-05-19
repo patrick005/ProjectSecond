@@ -3,12 +3,12 @@ import time
 
 context = zmq.Context()
 sub_socket = context.socket(zmq.SUB)
-sub_socket.connect("tcp://localhost:6000")  # 중개 서버의 PUB 포트
+sub_socket.connect("tcp://localhost:6000")
 sub_socket.subscribe("")
 
 players = []
 players_hp = {}
-actions_order = []  # 순서대로 (ip, action) 저장
+actions_order = []
 MAX_HP = 100
 DAMAGE = 10
 game_started = False
@@ -38,12 +38,22 @@ def process_round():
         players_hp[ip] = max(0, players_hp[ip])
         if players_hp[ip] <= 0:
             print(f"\n=== 게임 종료 ===")
-            print(f"승자: {players[1] if ip == players[0] else players[0]}")
+            winner = players[1] if ip == players[0] else players[0]
+            print(f"승자: {winner}")
             return False  # 게임 종료
 
     actions_order.clear()
     return True  # 다음 라운드 진행
 
+def reset_game():
+    global players, players_hp, actions_order, game_started
+    players = []
+    players_hp = {}
+    actions_order = []
+    game_started = False
+    print("\n--- 새 게임 대기 중 ---")
+
+# 첫 게임 시작 전에는 초기화 필요 없음
 while True:
     msg = sub_socket.recv_string()
     parts = msg.split(',')
@@ -52,23 +62,26 @@ while True:
         ip = parts[0].strip()
         action = parts[1].strip().upper()
 
+        # 플레이어 등록
         if ip not in players:
             players.append(ip)
             players_hp[ip] = MAX_HP
             print(f"[{ip}] 플레이어 등록")
 
+        # 게임 시작 조건
         if not game_started and len(players) == 2:
             print("\n두 명의 플레이어가 접속했습니다. 게임 시작!")
             print("플레이어 목록:", players)
             game_started = True
 
         if game_started:
-            # 한 플레이어가 중복 입력 못 하도록
+            # 같은 플레이어가 같은 라운드에 여러 번 입력 못 하게
             if any(entry[0] == ip for entry in actions_order):
                 continue
+
             actions_order.append((ip, action))
 
             if len(actions_order) == 2:
                 keep_going = process_round()
                 if not keep_going:
-                    break
+                    reset_game()
