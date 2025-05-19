@@ -1,75 +1,74 @@
 import zmq
 import time
 
-# ZMQ 설정
 context = zmq.Context()
-recv_socket = context.socket(zmq.PULL)
-recv_socket.bind("tcp://*:7755")  # ESP8266에서 전송
-
-pub_socket = context.socket(zmq.PUB)
-pub_socket.bind("tcp://*:6000")  # Python GUI에서 SUB
+sub_socket = context.socket(zmq.SUB)
+sub_socket.connect("tcp://localhost:6000")  # 중개 서버의 PUB 포트
+sub_socket.subscribe("")
 
 players = []
 players_hp = {}
-game_started = False
-
+actions_order = []  # 순서대로 (ip, action) 저장
 MAX_HP = 100
 DAMAGE = 10
+game_started = False
 
-print("서버 시작 - 센서 수신 대기 중...")
+print("ZMQ 구독 서버 시작 - 메시지 대기 중...")
 
-try:
-    while True:
-        try:
-            msg = recv_socket.recv(zmq.NOBLOCK).decode().strip()
+def process_round():
+    first_ip, first_action = actions_order[0]
+    second_ip, second_action = actions_order[1]
 
-            # 메시지 형태: "ip,ATTACK" 또는 "ip,MOVEMENT"
-            parts = msg.split(',')
+    print(f"\n[라운드 처리 순서]")
+    print(f"1. {first_ip}: {first_action}")
+    print(f"2. {second_ip}: {second_action}")
 
-            if len(parts) == 1:
-                continue  # IP가 없으면 무시
+    if first_action == "ATTACK" and second_action == "ATTACK":
+        players_hp[second_ip] -= DAMAGE
+        print(f"{first_ip}가 먼저 공격! {second_ip}가 피격됨. HP: {players_hp[second_ip]}")
+    elif first_action == "ATTACK" and second_action == "MOVEMENT":
+        print(f"{first_ip}가 공격했지만 {second_ip}가 회피 성공!")
+    elif first_action == "MOVEMENT" and second_action == "ATTACK":
+        print(f"{second_ip}가 공격했지만 {first_ip}가 회피 성공!")
+    elif first_action == "MOVEMENT" and second_action == "MOVEMENT":
+        print("둘 다 회피. 아무 일 없음.")
 
-            ip = parts[0].strip()
-            action = parts[1].strip().upper()
+    # 체력 0 확인
+    for ip in players:
+        players_hp[ip] = max(0, players_hp[ip])
+        if players_hp[ip] <= 0:
+            print(f"\n=== 게임 종료 ===")
+            print(f"승자: {players[1] if ip == players[0] else players[0]}")
+            return False  # 게임 종료
 
-            if ip not in players:
-                players.append(ip)
-                players_hp[ip] = MAX_HP
-                print(f"접속한 플레이어 IP: {ip}")
+    actions_order.clear()
+    return True  # 다음 라운드 진행
 
-            if not game_started and len(players) == 2:
-                print("\n두 명의 플레이어가 접속했습니다. 게임 시작!")
-                print("플레이어 IP 목록:")
-                for p in players:
-                    print("-", p)
-                pub_socket.send_string("START")
-                game_started = True
+while True:
+    msg = sub_socket.recv_string()
+    parts = msg.split(',')
 
-            if action == "ATTACK":
-                if len(players) < 2:
-                    continue
+    if len(parts) == 2:
+        ip = parts[0].strip()
+        action = parts[1].strip().upper()
 
-                attacker = ip
-                target = players[1] if players[0] == ip else players[0]
+        if ip not in players:
+            players.append(ip)
+            players_hp[ip] = MAX_HP
+            print(f"[{ip}] 플레이어 등록")
 
-                players_hp[target] -= DAMAGE
-                players_hp[target] = max(0, players_hp[target])
+        if not game_started and len(players) == 2:
+            print("\n두 명의 플레이어가 접속했습니다. 게임 시작!")
+            print("플레이어 목록:", players)
+            game_started = True
 
-                print(f"{attacker}가 {target}를 공격! {target} HP: {players_hp[target]}")
-                pub_socket.send_string(f"DAMAGE,{target},{players_hp[target]}")
+        if game_started:
+            # 한 플레이어가 중복 입력 못 하도록
+            if any(entry[0] == ip for entry in actions_order):
+                continue
+            actions_order.append((ip, action))
 
-                if players_hp[target] <= 0:
-                    print("\n=== 게임 종료 ===")
-                    print(f"승자: {attacker}")
-                    pub_socket.send_string(f"WINNER,{attacker}")
+            if len(actions_order) == 2:
+                keep_going = process_round()
+                if not keep_going:
                     break
-
-            elif action == "MOVEMENT":
-                print(f"{ip} 움직임 감지 (회피)")
-                pub_socket.send_string(f"MOVEMENT,{ip}")
-
-        except zmq.Again:
-            time.sleep(0.01)
-
-except KeyboardInterrupt:
-    print("서버 종료 중...")
