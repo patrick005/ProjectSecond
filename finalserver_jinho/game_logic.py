@@ -7,7 +7,7 @@ players_hp = {"player1": 100, "player2": 100}
 actions_order = []
 action_time = {}
 movement_window = 0.1
-action_timeout = 1.5
+action_timeout = 0.5
 game_started = False
 timeout_timer = None
 
