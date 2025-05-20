@@ -1,3 +1,4 @@
+# ZMQ 통신 처리
 import zmq      #ZeroMQ(ZMQ) 라이브러리를 임포트, 고성능 비동기 메시징 라이브러리로, 다양한 통신 패턴(PUB/SUB, REQ/REP 등)을 지원
 
 #ZMQ 구독자(Subscriber)를 설정하고 반환하는 함수 정의

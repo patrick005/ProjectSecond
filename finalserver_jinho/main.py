@@ -1,3 +1,4 @@
+ # 게임 실행 메인 스크립트
 import time
 from zmq_handler import setup_subscriber    #ZMQ 구독 소켓(subscriber) 설정 함수
 from game_logic import *                    #게임 관련 전역 변수와 함수들이 정의된 모듈

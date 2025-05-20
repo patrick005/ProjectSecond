@@ -1,3 +1,4 @@
+# TCP 중개 서버
 import socket           #TCP 네트워킹을 위한 기본 파이썬 모듈
 import threading        #클라이언트 여러 명을 동시에 처리하기 위한 스레드 지원
 import zmq              #ZeroMQ 메시징 라이브러리

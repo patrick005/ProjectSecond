@@ -1,6 +1,0 @@
-your_project/
-├── db_manager.py      # DB 관련 함수
-├── game_logic.py      # 게임 로직 처리
-├── zmq_handler.py     # ZMQ 통신 처리
-├── main.py            # 게임 실행 메인 스크립트
-└── relay_server.py    # TCP 중개 서버

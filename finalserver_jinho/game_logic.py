@@ -1,3 +1,4 @@
+# 게임 로직 처리
 import time
 import threading
 from db_manager import update_stats, update_draw
