@@ -117,6 +117,6 @@
 
 ---
 
-[Github](https://github.com/patrick005/ProjectSecond/tree/observer)
-[결과물](https://youtu.be/dcW99jtWKfo)
-[구글슬라이드](https://docs.google.com/presentation/d/1GJxnX2L3wgmm8hpRMDryaFBThQwkuFE3yCWnEiCGxtk/edit?usp=sharing)
+[Github](https://github.com/patrick005/ProjectSecond/tree/observer)  
+[결과물](https://youtu.be/dcW99jtWKfo)  
+[구글슬라이드](https://docs.google.com/presentation/d/1GJxnX2L3wgmm8hpRMDryaFBThQwkuFE3yCWnEiCGxtk/edit?usp=sharing)  
