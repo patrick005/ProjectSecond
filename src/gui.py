@@ -983,7 +983,7 @@ import os
 pygame.init()
 
 # 화면 설정
-WIDTH, HEIGHT = 600, 400
+WIDTH, HEIGHT = 1200, 800
 GameDisplay = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("위대한 2조 동무들의 합동작업")
 
@@ -1140,8 +1140,8 @@ class Player(pygame.sprite.Sprite):
             self.image = self.movement_image # MOVEMENT 이미지로 변경
 
 # 플레이어 객체 생성 좌표 (사용자 의도대로 유지)
-P1 = Player(220, 300, "player1")
-P2 = Player(380, 300, "player2")
+P1 = Player(420, 500, "player1")
+P2 = Player(580, 500, "player2")
 
 # 게임 상태 변수
 game_over_flag = False
